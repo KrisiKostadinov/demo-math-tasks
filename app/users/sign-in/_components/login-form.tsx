@@ -15,24 +15,23 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import {
-  registerFormSchema,
-  RegisterFormSchema,
-} from "@/app/users/sign-up/_schemas";
+  loginFormSchema,
+  LoginFormSchema,
+} from "@/app/users/sign-in/_schemas";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-export default function RegisterForm() {
+export default function LoginForm() {
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const form = useForm<RegisterFormSchema>({
-    resolver: zodResolver(registerFormSchema),
+  const form = useForm<LoginFormSchema>({
+    resolver: zodResolver(loginFormSchema),
     defaultValues: {
       email: "",
       password: "",
-      cpassword: "",
     },
   });
 
-  function onSubmit(values: RegisterFormSchema) {
+  function onSubmit(values: LoginFormSchema) {
     console.log(values);
   }
 
@@ -68,37 +67,7 @@ export default function RegisterForm() {
                   <div className="relative">
                     <Input
                       type={showPassword ? "text" : "password"}
-                      placeholder="Въведете парола"
-                      {...field}
-                    />
-                    {!showPassword ? (
-                      <EyeIcon
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute bottom-3.5 right-4 text-muted-foreground cursor-pointer"
-                      />
-                    ) : (
-                      <EyeOffIcon
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute bottom-3.5 right-4 text-muted-foreground cursor-pointer"
-                      />
-                    )}
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="cpassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-lg">Потвърдете паролата</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Input
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Въведете парола отново"
+                      placeholder="Въведете паролата си"
                       {...field}
                     />
                     {!showPassword ? (
@@ -121,13 +90,13 @@ export default function RegisterForm() {
           <div className="space-y-5">
             <Button type="submit">
               <LogInIcon />
-              <span>Създаване</span>
+              <span>Вход</span>
             </Button>
             <Link
-              href={"/users/sign-in"}
+              href={"/users/sign-up"}
               className="block w-fit hover:underline hover:text-primary"
             >
-              Вход в профила
+              Създаване на профил
             </Link>
           </div>
         </form>

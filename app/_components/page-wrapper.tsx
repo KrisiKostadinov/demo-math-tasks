@@ -22,7 +22,7 @@ export default function PageWrapper({ children, sidebar }: PageWrapperProps) {
       toggleSidebar(false);
     }
     setMounted(true);
-  }, [sidebar]);
+  }, [sidebar, isOpen, toggleSidebar]);
 
   if (!mounded) {
     return null;
