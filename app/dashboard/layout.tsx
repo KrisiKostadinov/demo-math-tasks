@@ -10,7 +10,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="flex">
       <Sidebar />
-      <main className="flex-1">
+      <main className="flex-1 pr-5">
         {children}
       </main>
     </div>

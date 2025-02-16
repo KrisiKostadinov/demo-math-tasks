@@ -11,7 +11,7 @@ export default function Home() {
   return (
     <div>
       <h1 className="text-center text-2xl font-semibold py-10 text-white bg-blue-500">
-        Математически тренажир
+        {process.env.NEXT_PUBLIC_WEBSITE_TITLE}
       </h1>
       {/* <DisplayQuestion question={currentQuestion} /> */}
     </div>
