@@ -15,7 +15,12 @@ export default function Sidebar() {
         Администрация
       </div>
       <ul>
-        <DisplayItem heading="Табло" link="/dashboard" icon="LayoutDashboard" />
+        <DisplayItem
+          heading="Табло"
+          link="/dashboard"
+          icon="LayoutDashboard"
+          isExact
+        />
         <DisplayItem
           heading="Потребители"
           link="/dashboard/users"
@@ -42,11 +47,7 @@ export default function Sidebar() {
           icon="UserCheck"
         />
         <Separator />
-        <DisplayItem
-          heading="Към сайта"
-          link="/"
-          icon="Globe"
-        />
+        <DisplayItem heading="Към сайта" link="/" icon="Globe" isExact />
       </ul>
     </aside>
   );
@@ -56,12 +57,24 @@ type DisplayItemProps = {
   heading: string;
   link: string;
   icon: keyof typeof LucideIcons;
+  isExact?: boolean;
 };
 
-const DisplayItem = ({ heading, link, icon }: DisplayItemProps) => {
+const DisplayItem = ({
+  heading,
+  link,
+  icon,
+  isExact = false,
+}: DisplayItemProps) => {
   const pathname = usePathname();
 
-  const isActive = (path: string) => path === pathname;
+  const isActive = (path: string) => {
+    if (isExact) {
+      return pathname === path;
+    }
+
+    return pathname.includes(path);
+  };
 
   return (
     <li>

@@ -2,14 +2,20 @@ import { PlusIcon } from "lucide-react";
 import { Metadata } from "next";
 import Link from "next/link";
 
+import { prisma } from "@/db/prisma";
 import { Button } from "@/components/ui/button";
-import SchoolClassesList from "@/app/dashboard/classes/_components/school-classes-list";
+import { columns } from "@/app/dashboard/classes/_components/columns";
+import { DataTable } from "@/app/dashboard/classes/_components/data-table";
 
 export const metadata: Metadata = {
   title: "Класове",
 };
 
-export default function Classes() {
+export default async function Classes() {
+  const classes = await prisma.schoolClass.findMany({
+    orderBy: { createdAt: "desc" },
+  });
+
   return (
     <>
       <section className="flex justify-between items-center">
@@ -22,7 +28,7 @@ export default function Classes() {
         </Button>
       </section>
       <section className="px-5">
-        <SchoolClassesList />
+        <DataTable columns={columns} data={classes} />
       </section>
     </>
   );
