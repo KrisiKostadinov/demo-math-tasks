@@ -1,4 +1,4 @@
-import DesktopSidebar from "@/app/_components/sidebar/desktop-sidebar";
+import SidebarClientComponent from "@/app/_components/sidebar/sidebar-client-component";
 import { prisma } from "@/db/prisma";
 
 export default async function Sidebar() {
@@ -6,7 +6,7 @@ export default async function Sidebar() {
 
   return (
     <>
-      <DesktopSidebar schoolClasses={schoolClasses} />
+      <SidebarClientComponent schoolClasses={schoolClasses} />
     </>
   );
 }

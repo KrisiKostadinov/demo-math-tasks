@@ -10,6 +10,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { SchoolClass } from "@prisma/client";
+import useSidebarStore from "@/zustand/sidebar";
 
 type DisplaySidebarItemsProps = {
   schoolClasses: SchoolClass[];
@@ -70,6 +71,7 @@ const DisplayItem = ({
   icon,
   isExact = false,
 }: DisplayItemProps) => {
+  const { toggleSidebar } = useSidebarStore();
   const pathname = usePathname();
 
   const isActive = (path: string) => {
@@ -88,6 +90,7 @@ const DisplayItem = ({
           "text-lg flex items-center gap-2 hover:text-white hover:bg-blue-500 py-3 px-5",
           isActive(link) && "text-white bg-blue-500"
         )}
+        onClick={() => toggleSidebar(false)}
       >
         {icon ? <ClientIcon name={icon} /> : <ChevronRightIcon />}
         <span>{heading}</span>
