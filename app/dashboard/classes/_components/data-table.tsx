@@ -13,6 +13,8 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 
 import { SchoolClass } from "@prisma/client";
 import { Input } from "@/components/ui/input";
@@ -23,7 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, TrashIcon } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -32,6 +34,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { deleteMoltipleSchoolClassesAction } from "@/app/dashboard/classes/_actions";
 
 type DataTableProps = {
   data: SchoolClass[];
@@ -39,6 +42,7 @@ type DataTableProps = {
 };
 
 export function DataTable({ data, columns }: DataTableProps) {
+  const router = useRouter();
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -63,17 +67,41 @@ export function DataTable({ data, columns }: DataTableProps) {
     },
   });
 
+  const onDelete = async () => {
+    const ids = table.getFilteredSelectedRowModel().rows.map((x) => x.original.id);
+
+    try {
+      await deleteMoltipleSchoolClassesAction(ids);
+      toast.success("Премахването на класовете беше успешно.");
+      router.refresh();
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Нещо се обърка.");
+      }
+    }
+  };
+
   return (
     <div className="w-full">
       <div className="flex items-center py-4">
-        <Input
-          placeholder="Търсене по име..."
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("name")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
+        <div className="flex items-center gap-5">
+          <Input
+            placeholder="Търсене по име..."
+            value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+            onChange={(event) =>
+              table.getColumn("name")?.setFilterValue(event.target.value)
+            }
+            className="max-w-sm"
+          />
+          {table.getFilteredSelectedRowModel().rows.length > 0 && (
+            <Button variant={"destructive"} onClick={onDelete}>
+              <TrashIcon />
+              <span>Премахване на всички</span>
+            </Button>
+          )}
+        </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
