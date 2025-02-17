@@ -1,25 +1,28 @@
 "use client";
 
 import { ChevronRightIcon } from "lucide-react";
+import * as LucideIcons from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import * as LucideIcons from "lucide-react";
+import { useMedia } from "react-use";
+import { useEffect, useState } from "react";
+import { Session } from "next-auth";
 
 import { ClientIcon } from "@/components/ui/client-icon";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { SchoolClass } from "@prisma/client";
+import { SchoolClass, UserRole } from "@prisma/client";
 import useSidebarStore from "@/zustand/sidebar";
-import { useMedia } from "react-use";
-import { useEffect, useState } from "react";
 
 type DisplaySidebarItemsProps = {
   schoolClasses: SchoolClass[];
+  session: Session | null;
 };
 
 export default function DisplaySidebarItems({
   schoolClasses,
+  session,
 }: DisplaySidebarItemsProps) {
   return (
     <ScrollArea className="h-screen">
@@ -38,7 +41,36 @@ export default function DisplaySidebarItems({
           <DisplayItem heading={x.name} link={`/${x.slug}`} key={index} />
         ))}
         <Separator />
-        <DisplayItem heading="Вход" link="/users/sign-in" icon="UserIcon" />
+        {!session ? (
+          <>
+            <DisplayItem
+              heading="Вход"
+              link="/users/sign-in"
+              icon="LogInIcon"
+            />
+            <DisplayItem
+              heading="Създаване на профил"
+              link="/users/sign-up"
+              icon="UserIcon"
+            />
+          </>
+        ) : (
+          <>
+            <DisplayItem
+              heading="Моят профил"
+              link="/users/account"
+              icon="UserCogIcon"
+            />
+            {(session?.user.role as UserRole) === "ADMIN" && (
+              <DisplayItem
+                heading="Администрация"
+                link="/dashboard"
+                icon="Shield"
+              />
+            )}
+          </>
+        )}
+
         <Separator />
         <DisplayItem heading="Контакти" link="/contacts" icon="ContactIcon" />
         <DisplayItem heading="За нас" link="/about-us" icon="UsersIcon" />
@@ -80,7 +112,7 @@ const DisplayItem = ({
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+  }, [mounded]);
 
   if (!mounded) {
     return null;

@@ -8,18 +8,28 @@ datasource db {
 }
 
 model User {
-  id            String          @id @default(auto()) @map("_id") @db.ObjectId
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
   name          String?
-  email         String?         @unique
+  email         String?   @unique
   emailVerified DateTime?
+  password      String?
   image         String?
-  accounts      Account[]
-  sessions      Session[]
+
+  role UserRole
+
+  accounts Account[]
+  sessions Session[]
+
   // Optional for WebAuthn support
   Authenticator Authenticator[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum UserRole {
+  ADMIN
+  USER
 }
 
 model Account {

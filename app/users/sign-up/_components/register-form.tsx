@@ -5,6 +5,9 @@ import { useForm } from "react-hook-form";
 import { EyeIcon, EyeOffIcon, LogInIcon } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
+import { toast } from "react-toastify";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 import {
   Form,
@@ -20,8 +23,10 @@ import {
 } from "@/app/users/sign-up/_schemas";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { registerAction } from "@/app/users/sign-up/_actions";
 
 export default function RegisterForm() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const form = useForm<RegisterFormSchema>({
     resolver: zodResolver(registerFormSchema),
@@ -32,9 +37,20 @@ export default function RegisterForm() {
     },
   });
 
-  function onSubmit(values: RegisterFormSchema) {
-    console.log(values);
-  }
+  const onSubmit = async (values: RegisterFormSchema) => {
+    try {
+      await registerAction(values);
+      await signIn("credentials", values);
+      router.push("/");
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+        return;
+      }
+
+      toast.error("Нещо се обърка");
+    }
+  };
 
   return (
     <div>
@@ -51,6 +67,7 @@ export default function RegisterForm() {
                     type="email"
                     placeholder="Въведете имейл адресът си"
                     {...field}
+                    disabled={form.formState.isSubmitting}
                     autoFocus
                   />
                 </FormControl>
@@ -70,6 +87,7 @@ export default function RegisterForm() {
                       type={showPassword ? "text" : "password"}
                       placeholder="Въведете парола"
                       {...field}
+                      disabled={form.formState.isSubmitting}
                     />
                     {!showPassword ? (
                       <EyeIcon
@@ -100,6 +118,7 @@ export default function RegisterForm() {
                       type={showPassword ? "text" : "password"}
                       placeholder="Въведете парола отново"
                       {...field}
+                      disabled={form.formState.isSubmitting}
                     />
                     {!showPassword ? (
                       <EyeIcon
@@ -119,9 +138,11 @@ export default function RegisterForm() {
             )}
           />
           <div className="space-y-5">
-            <Button type="submit">
+            <Button type="submit" disabled={form.formState.isSubmitting}>
               <LogInIcon />
-              <span>Създаване</span>
+              <span>
+                {form.formState.isSubmitting ? "Зареждане..." : "Създаване"}
+              </span>
             </Button>
             <Link
               href={"/users/sign-in"}

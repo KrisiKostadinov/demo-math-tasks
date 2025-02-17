@@ -2,7 +2,6 @@ import { Metadata } from "next";
 import Image from "next/image";
 
 import PageWrapper from "@/app/_components/page-wrapper";
-import Sidebar from "@/app/_components/sidebar";
 import RegisterForm from "@/app/users/sign-up/_components/register-form";
 
 export const metadata: Metadata = {
@@ -18,7 +17,7 @@ export const metadata: Metadata = {
 
 export default function RegisterPage() {
   return (
-    <PageWrapper sidebar={<Sidebar />}>
+    <PageWrapper>
       <div className="p-5 md:p-10 space-y-5">
         <h1 className="text-2xl font-semibold">
           Създаване на профил в платформата

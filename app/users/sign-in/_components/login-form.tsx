@@ -5,6 +5,8 @@ import { useForm } from "react-hook-form";
 import { EyeIcon, EyeOffIcon, LogInIcon } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
+import { signIn } from "next-auth/react";
+import { toast } from "react-toastify";
 
 import {
   Form,
@@ -14,12 +16,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  loginFormSchema,
-  LoginFormSchema,
-} from "@/app/users/sign-in/_schemas";
+import { loginFormSchema, LoginFormSchema } from "@/app/users/sign-in/_schemas";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { signInAction } from "@/app/users/sign-in/_actions";
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -31,9 +31,19 @@ export default function LoginForm() {
     },
   });
 
-  function onSubmit(values: LoginFormSchema) {
-    console.log(values);
-  }
+  const onSubmit = async (values: LoginFormSchema) => {
+    try {
+      await signInAction(values);
+      await signIn("credentials", values);
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+        return;
+      }
+
+      toast.error("Нещо се обърка");
+    }
+  };
 
   return (
     <div>
@@ -50,6 +60,7 @@ export default function LoginForm() {
                     type="email"
                     placeholder="Въведете имейл адресът си"
                     {...field}
+                    disabled={form.formState.isSubmitting}
                     autoFocus
                   />
                 </FormControl>
@@ -69,6 +80,7 @@ export default function LoginForm() {
                       type={showPassword ? "text" : "password"}
                       placeholder="Въведете паролата си"
                       {...field}
+                      disabled={form.formState.isSubmitting}
                     />
                     {!showPassword ? (
                       <EyeIcon
@@ -88,9 +100,11 @@ export default function LoginForm() {
             )}
           />
           <div className="space-y-5">
-            <Button type="submit">
+            <Button type="submit" disabled={form.formState.isSubmitting}>
               <LogInIcon />
-              <span>Вход</span>
+              <span>
+                {form.formState.isSubmitting ? "Зареждане..." : "Вход"}
+              </span>
             </Button>
             <Link
               href={"/users/sign-up"}
