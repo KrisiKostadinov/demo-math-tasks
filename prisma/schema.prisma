@@ -105,6 +105,8 @@ model SchoolClass {
   description String?
   createdAt   DateTime          @default(now())
   status      SchoolClassStatus
+
+  tutorials SchoolTutorial[] @relation
 }
 
 enum SchoolClassStatus {
@@ -123,6 +125,22 @@ model Subscription {
 }
 
 enum SubscriptionStatus {
+  ACTIVE
+  DRAFT
+}
+
+model SchoolTutorial {
+  id        String         @id @default(uuid()) @map("_id")
+  name      String
+  slug      String
+  status    TutorialStatus
+  createdAt DateTime       @default(now())
+
+  schoolClassId String
+  schoolClass   SchoolClass @relation(fields: [schoolClassId], references: [id], onDelete: Cascade)
+}
+
+enum TutorialStatus {
   ACTIVE
   DRAFT
 }
