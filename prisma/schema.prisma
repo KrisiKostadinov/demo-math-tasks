@@ -111,3 +111,18 @@ enum SchoolClassStatus {
   ACTIVE
   DRAFT
 }
+
+model Subscription {
+  id            String             @id @default(uuid()) @map("_id")
+  name          String
+  originalPrice Float              @map("original_price")
+  sellingPrice  Float?             @map("selling_price")
+  description   String?
+  status        SubscriptionStatus
+  createdAt     DateTime           @default(now())
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  DRAFT
+}

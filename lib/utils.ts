@@ -36,3 +36,12 @@ export function formatDate(date: Date, format: string = "DD.MM.YYYY"): string {
 
   return format.replace("DD", day).replace("MM", month).replace("YYYY", year);
 }
+
+export function formatPrice(amount: number, currency: string = 'BGN', locale: string = 'bg-BG'): string {
+  return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+  }).format(amount);
+}

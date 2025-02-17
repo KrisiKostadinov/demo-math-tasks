@@ -15,8 +15,9 @@ import {
 } from "@tanstack/react-table";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
+import { ChevronDown, TrashIcon } from "lucide-react";
 
-import { SchoolClass } from "@prisma/client";
+import { Subscription } from "@prisma/client";
 import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
@@ -25,7 +26,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, TrashIcon } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -34,11 +34,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { deleteMultipleSchoolClassesAction } from "@/app/dashboard/classes/_actions";
+import { deleteMultipleSubscriptionsAction } from "@/app/dashboard/subscriptions/_actions";
 
 type DataTableProps = {
-  data: SchoolClass[];
-  columns: ColumnDef<SchoolClass>[];
+  data: Subscription[];
+  columns: ColumnDef<Subscription>[];
 };
 
 export function DataTable({ data, columns }: DataTableProps) {
@@ -71,8 +71,8 @@ export function DataTable({ data, columns }: DataTableProps) {
     const ids = table.getFilteredSelectedRowModel().rows.map((x) => x.original.id);
 
     try {
-      await deleteMultipleSchoolClassesAction(ids);
-      toast.success("Премахването на класовете беше успешно.");
+      await deleteMultipleSubscriptionsAction(ids);
+      toast.success("Премахването на абонаментите беше успешно.");
       router.refresh();
     } catch (error) {
       if (error instanceof Error) {

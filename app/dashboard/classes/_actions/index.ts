@@ -18,7 +18,7 @@ export const deleteSchoolClassAction = async (id: string) => {
   return { deleteSchoolClass };
 };
 
-export const deleteMoltipleSchoolClassesAction = async (ids: string[]) => {
+export const deleteMultipleSchoolClassesAction = async (ids: string[]) => {
   const deleteSchoolClass = await prisma.schoolClass.deleteMany({
     where: {
       id: {
