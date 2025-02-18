@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/db/prisma";
+import { SchoolClassStatus } from "@prisma/client";
 
 export const deleteSchoolClassAction = async (id: string) => {
   const schoolClass = await prisma.schoolClass.findUnique({
@@ -30,7 +31,32 @@ export const deleteMultipleSchoolClassesAction = async (ids: string[]) => {
   return { deleteSchoolClass };
 };
 
-export const getAllClassesAction = async() => {
+export const getAllClassesAction = async () => {
   const schoolClasses = await prisma.schoolClass.findMany();
   return schoolClasses;
-}
+};
+
+export const getClassAction = async (id: string) => {
+  const schoolClass = await prisma.schoolClass.findUnique({
+    where: { id },
+  });
+  return schoolClass;
+};
+
+export const updateSchoolClassStatusAction = async (
+  status: SchoolClassStatus,
+  ids: string[],
+) => {
+  const updatedSchoolClass = await prisma.schoolClass.updateMany({
+    where: {
+      id: {
+        in: ids,
+      }
+    },
+    data: {
+      status,
+    },
+  });
+
+  return { updatedSchoolClass };
+};

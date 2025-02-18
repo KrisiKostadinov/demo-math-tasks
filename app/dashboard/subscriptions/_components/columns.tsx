@@ -142,6 +142,7 @@ export const columns: ColumnDef<Subscription>[] = [
   {
     id: "actions",
     enableHiding: false,
+    header: "Опции",
     cell: ({ row }) => {
       return <DisplayActions id={row.original.id} />;
     },

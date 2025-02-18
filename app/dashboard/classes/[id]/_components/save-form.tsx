@@ -4,14 +4,14 @@ import { toast } from "react-toastify";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, SaveIcon } from "lucide-react";
 import { FaSpinner } from "react-icons/fa";
 
 import {
   CreateFormSchema,
   createFormSchema,
-} from "@/app/dashboard/classes/create/_schema";
-import { createSchoolClassAction } from "@/app/dashboard/classes/create/_actions";
+} from "@/app/dashboard/classes/[id]/_schemas";
+import { updateSchoolClass } from "@/app/dashboard/classes/[id]/_actions";
 import {
   Form,
   FormControl,
@@ -23,20 +23,31 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { SchoolClass } from "@prisma/client";
+import { Textarea } from "@/components/ui/textarea";
 
-export default function CreateForm() {
+type UpdateNameFormProps = {
+  schoolClass: SchoolClass | null;
+};
+
+export default function UpdateNameForm({ schoolClass }: UpdateNameFormProps) {
   const router = useRouter();
   const form = useForm<CreateFormSchema>({
     resolver: zodResolver(createFormSchema),
     defaultValues: {
-      name: "",
+      name: schoolClass?.name || "",
+      description: schoolClass?.description || "",
     },
   });
 
   async function onSubmit(values: CreateFormSchema) {
+    const message = !schoolClass
+      ? "Успешно довавяне на нов учебен клас."
+      : "Името на класа беше променено.";
+
     try {
-      await createSchoolClassAction(values);
-      toast.success("Успешно довавяне на нов учебен клас.");
+      await updateSchoolClass(values, schoolClass?.id || null);
+      toast.success(message);
       router.push("/dashboard/classes");
     } catch (error) {
       if (error instanceof Error) {
@@ -54,7 +65,7 @@ export default function CreateForm() {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-lg">Име</FormLabel>
+              <FormLabel className="text-lg">Име (задължително)</FormLabel>
               <FormControl>
                 <Input
                   type="text"
@@ -71,17 +82,42 @@ export default function CreateForm() {
             </FormItem>
           )}
         />
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-lg">Описание (по избор)</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Описание на класа"
+                  {...field}
+                  rows={6}
+                  disabled={form.formState.isSubmitting}
+                />
+              </FormControl>
+              <FormMessage />
+              <FormDescription className="text-lg">
+                Кратко описание на класа и за какво той се използва.
+              </FormDescription>
+            </FormItem>
+          )}
+        />
         <div className="space-y-5">
           <Button type="submit" disabled={form.formState.isSubmitting}>
             {form.formState.isSubmitting ? (
               <FaSpinner className="animate-spin repeat-infinite w-20 h-20" />
-            ) : (
+            ) : !schoolClass ? (
               <PlusIcon />
+            ) : (
+              <SaveIcon />
             )}
             <span>
               {form.formState.isSubmitting
                 ? "Зареждане..."
-                : "Добавяне на класа"}
+                : !schoolClass
+                ? "Добавяне на класа"
+                : "Промяна на класа"}
             </span>
           </Button>
         </div>

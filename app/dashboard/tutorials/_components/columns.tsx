@@ -4,6 +4,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import Link from "next/link";
 
 import { SchoolClass, SchoolTutorial, TutorialStatus } from "@prisma/client";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -14,12 +15,17 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { getFormattedStatus } from "@/app/dashboard/tutorials/_utils";
 import { formatDate } from "@/lib/utils";
-import { deleteTutorialAction } from "@/app/dashboard/tutorials/_actions";
-import Link from "next/link";
+import {
+  deleteTutorialAction,
+  updateSchoolTutorialsStatusAction,
+} from "@/app/dashboard/tutorials/_actions";
 
 export const columns: ColumnDef<SchoolTutorial>[] = [
   {
@@ -76,19 +82,6 @@ export const columns: ColumnDef<SchoolTutorial>[] = [
     },
   },
   {
-    accessorKey: "description",
-    header: () => <div>Описание</div>,
-    cell: ({ row }) => (
-      <>
-        {row.getValue("description") ? (
-          <div className="text-wrap">{row.getValue("description")}</div>
-        ) : (
-          <div className="text-muted-foreground">Няма описание</div>
-        )}
-      </>
-    ),
-  },
-  {
     accessorKey: "createdAt",
     header: ({ column }) => (
       <Button
@@ -121,13 +114,21 @@ export const columns: ColumnDef<SchoolTutorial>[] = [
   {
     id: "actions",
     enableHiding: false,
+    header: "Опции",
     cell: ({ row }) => {
-      return <DisplayActions id={row.original.id} />;
+      return (
+        <DisplayActions id={row.original.id} status={row.original.status} />
+      );
     },
   },
 ];
 
-const DisplayActions = ({ id }: { id: string }) => {
+type DisplayActionsProps = {
+  id: string;
+  status: TutorialStatus;
+};
+
+const DisplayActions = ({ id, status }: DisplayActionsProps) => {
   const router = useRouter();
 
   const onUpdate = (id: string) => {
@@ -139,6 +140,20 @@ const DisplayActions = ({ id }: { id: string }) => {
     try {
       await deleteTutorialAction(id);
       toast.success("Премахването на урока беше успешно.");
+      router.refresh();
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Нещо се обърка.");
+      }
+    }
+  };
+
+  const onUpdateStatus = async (status: TutorialStatus) => {
+    try {
+      await updateSchoolTutorialsStatusAction(status, [id]);
+      toast.success("Статусът беше променен.");
       router.refresh();
     } catch (error) {
       if (error instanceof Error) {
@@ -162,6 +177,23 @@ const DisplayActions = ({ id }: { id: string }) => {
         <DropdownMenuItem onClick={() => onUpdate(id)}>
           Промяна
         </DropdownMenuItem>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>Статус</DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            <DropdownMenuItem
+              onClick={() => onUpdateStatus("ACTIVE")}
+              disabled={status === "ACTIVE"}
+            >
+              Активиране
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => onUpdateStatus("DRAFT")}
+              disabled={status === "DRAFT"}
+            >
+              Деактивиране
+            </DropdownMenuItem>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
         <DropdownMenuItem onClick={() => onDelete(id)}>
           Премахване
         </DropdownMenuItem>

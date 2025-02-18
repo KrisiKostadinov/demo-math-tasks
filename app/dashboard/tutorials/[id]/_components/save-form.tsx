@@ -10,8 +10,8 @@ import { FaSpinner } from "react-icons/fa";
 import {
   CreateFormSchema,
   createFormSchema,
-} from "@/app/dashboard/tutorials/create/_schemas";
-import { createTutorialAction } from "@/app/dashboard/tutorials/create/_actions";
+} from "@/app/dashboard/tutorials/[id]/_schemas";
+import { updateSchoolTutorial } from "@/app/dashboard/tutorials/[id]/_actions";
 import {
   Form,
   FormControl,
@@ -30,27 +30,35 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SchoolClass } from "@prisma/client";
+import { SchoolClass, SchoolTutorial } from "@prisma/client";
 
 type CreateFormProps = {
+  tutorial: SchoolTutorial | null;
   schoolClasses: SchoolClass[];
 };
 
-export default function CreateForm({ schoolClasses }: CreateFormProps) {
+export default function CreateForm({
+  tutorial,
+  schoolClasses,
+}: CreateFormProps) {
   const router = useRouter();
   const form = useForm<CreateFormSchema>({
     resolver: zodResolver(createFormSchema),
     defaultValues: {
-      name: "",
-      status: "DRAFT",
-      schoolClassId: "",
+      name: tutorial?.name || "",
+      status: tutorial?.status || "DRAFT",
+      schoolClassId: tutorial?.schoolClassId || "",
     },
   });
 
   async function onSubmit(values: CreateFormSchema) {
+    const message = tutorial
+      ? "Успешно довавяне на нов урок."
+      : "Урокът беше променен.";
+
     try {
-      await createTutorialAction(values);
-      toast.success("Успешно довавяне на нов урок.");
+      await updateSchoolTutorial(values, tutorial?.id || null);
+      toast.success(message);
       router.push(`/dashboard/tutorials?class=${values.schoolClassId}`);
     } catch (error) {
       if (error instanceof Error) {
@@ -156,7 +164,7 @@ export default function CreateForm({ schoolClasses }: CreateFormProps) {
             <span>
               {form.formState.isSubmitting
                 ? "Зареждане..."
-                : "Добавяне на урока"}
+                : tutorial ? "Промяна на урока" : "Добавяне на урока"}
             </span>
           </Button>
         </div>

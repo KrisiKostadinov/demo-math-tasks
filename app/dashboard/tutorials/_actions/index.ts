@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/db/prisma";
+import { TutorialStatus } from "@prisma/client";
 
 export const deleteTutorialAction = async (id: string) => {
   const subscription = await prisma.schoolTutorial.findUnique({
@@ -42,4 +43,29 @@ export const getTutorials = async (schoolClassId: string | null, includeSchoolCl
   });
   
   return tutorials;
+};
+
+export const getTutorialAction = async (id: string) => {
+  const tutorial = await prisma.schoolTutorial.findUnique({
+    where: { id },
+  });
+  return tutorial;
+};
+
+export const updateSchoolTutorialsStatusAction = async (
+  status: TutorialStatus,
+  ids: string[],
+) => {
+  const updatedSchoolTutorials = await prisma.schoolTutorial.updateMany({
+    where: {
+      id: {
+        in: ids,
+      }
+    },
+    data: {
+      status,
+    },
+  });
+
+  return { updatedSchoolTutorials };
 };

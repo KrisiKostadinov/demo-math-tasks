@@ -5,7 +5,7 @@ import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 
-import { SchoolClass } from "@prisma/client";
+import { SchoolClass, SchoolClassStatus } from "@prisma/client";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,9 +15,15 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu";
 import { getFormattedStatus } from "@/app/dashboard/classes/_utils";
-import { deleteSchoolClassAction } from "@/app/dashboard/classes/_actions";
+import {
+  deleteSchoolClassAction,
+  updateSchoolClassStatusAction,
+} from "@/app/dashboard/classes/_actions";
 import { formatDate } from "@/lib/utils";
 
 export const columns: ColumnDef<SchoolClass>[] = [
@@ -94,7 +100,7 @@ export const columns: ColumnDef<SchoolClass>[] = [
     header: "Статус",
     cell: ({ row }) => (
       <>
-        {row.getValue("status") ? (
+        {row.getValue("status") as SchoolClassStatus === "DRAFT" ? (
           <Badge variant={"outline"}>
             {getFormattedStatus(row.getValue("status"))}
           </Badge>
@@ -107,13 +113,21 @@ export const columns: ColumnDef<SchoolClass>[] = [
   {
     id: "actions",
     enableHiding: false,
+    header: "Опции",
     cell: ({ row }) => {
-      return <DisplayActions id={row.original.id} />;
+      return (
+        <DisplayActions id={row.original.id} status={row.original.status} />
+      );
     },
   },
 ];
 
-const DisplayActions = ({ id }: { id: string }) => {
+type DisplayActionsProps = {
+  id: string;
+  status: SchoolClassStatus;
+};
+
+const DisplayActions = ({ id, status }: DisplayActionsProps) => {
   const router = useRouter();
 
   const onUpdate = (id: string) => {
@@ -125,6 +139,20 @@ const DisplayActions = ({ id }: { id: string }) => {
     try {
       await deleteSchoolClassAction(id);
       toast.success("Премахването на класа беше успешно.");
+      router.refresh();
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Нещо се обърка.");
+      }
+    }
+  };
+
+  const onUpdateStatus = async (status: SchoolClassStatus) => {
+    try {
+      await updateSchoolClassStatusAction(status, [id]);
+      toast.success("Статусът беше променен.");
       router.refresh();
     } catch (error) {
       if (error instanceof Error) {
@@ -148,6 +176,23 @@ const DisplayActions = ({ id }: { id: string }) => {
         <DropdownMenuItem onClick={() => onUpdate(id)}>
           Промяна
         </DropdownMenuItem>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>Статус</DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            <DropdownMenuItem
+              onClick={() => onUpdateStatus("ACTIVE")}
+              disabled={status === "ACTIVE"}
+            >
+              Активиране
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => onUpdateStatus("DRAFT")}
+              disabled={status === "DRAFT"}
+            >
+              Деактивиране
+            </DropdownMenuItem>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
         <DropdownMenuItem onClick={() => onDelete(id)}>
           Премахване
         </DropdownMenuItem>

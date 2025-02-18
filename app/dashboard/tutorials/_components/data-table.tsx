@@ -15,14 +15,19 @@ import {
 } from "@tanstack/react-table";
 import { toast } from "react-toastify";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ChevronDown, TrashIcon } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
-import { SchoolTutorial } from "@prisma/client";
+import { SchoolTutorial, TutorialStatus } from "@prisma/client";
 import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
@@ -34,7 +39,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { deleteMultipleTutorialsAction } from "@/app/dashboard/tutorials/_actions";
+import {
+  deleteMultipleTutorialsAction,
+  updateSchoolTutorialsStatusAction,
+} from "@/app/dashboard/tutorials/_actions";
 
 type DataTableProps = {
   data: SchoolTutorial[];
@@ -70,10 +78,12 @@ export function DataTable({ data, columns }: DataTableProps) {
 
   useEffect(() => {
     table.getColumn("name")?.setFilterValue("");
-  }, [searchParams]);
+  }, [table, searchParams]);
 
   const onDelete = async () => {
-    const ids = table.getFilteredSelectedRowModel().rows.map((x) => x.original.id);
+    const ids = table
+      .getFilteredSelectedRowModel()
+      .rows.map((x) => x.original.id);
 
     try {
       await deleteMultipleTutorialsAction(ids);
@@ -88,24 +98,60 @@ export function DataTable({ data, columns }: DataTableProps) {
     }
   };
 
+  const onUpdateStatus = async (status: TutorialStatus) => {
+    const ids = table
+      .getFilteredSelectedRowModel()
+      .rows.map((x) => x.original.id);
+
+    try {
+      await updateSchoolTutorialsStatusAction(status, ids);
+      toast.success("Статусът беше променен.");
+      router.refresh();
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Нещо се обърка.");
+      }
+    }
+  };
+
   return (
     <div className="w-full">
-      <div className="flex items-center py-4">
-        <div className="flex items-center gap-5">
+      <div className="flex items-center gap-5 py-4">
+        <div className="flex items-center gap-5 w-full">
+          {table.getFilteredSelectedRowModel().rows.length > 0 && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild className="w-[200px]">
+                <Button variant="outline">Масови действия</Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="center" className="w-[200px]">
+                <DropdownMenuLabel>Опции</DropdownMenuLabel>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>Статус</DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuItem onClick={() => onUpdateStatus("ACTIVE")}>
+                      Активиране
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onUpdateStatus("DRAFT")}>
+                      Деактивиране
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+                <DropdownMenuItem onClick={onDelete}>
+                  Премахване
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
           <Input
             placeholder="Търсене по име..."
             value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
             onChange={(event) =>
               table.getColumn("name")?.setFilterValue(event.target.value)
             }
-            className="max-w-sm"
+            className="w-full"
           />
-          {table.getFilteredSelectedRowModel().rows.length > 0 && (
-            <Button variant={"destructive"} onClick={onDelete}>
-              <TrashIcon />
-              <span>Премахване на всички</span>
-            </Button>
-          )}
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

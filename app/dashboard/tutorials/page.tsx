@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 type TutorialsProps = {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string }>;
 };
 
 export default async function Tutorials({ searchParams }: TutorialsProps) {

@@ -16,7 +16,7 @@ export const createSubscriptionAction = async (data: CreateFormSchema) => {
 
   const slug = createSlug(data.name);
   
-  const schoolClass = await prisma.schoolClass.findUnique({
+  const schoolClass = await prisma.schoolClass.findFirst({
     where: { slug },
   });
 
