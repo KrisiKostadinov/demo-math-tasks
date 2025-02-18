@@ -4,14 +4,14 @@ import { toast } from "react-toastify";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, SaveIcon } from "lucide-react";
 import { FaSpinner } from "react-icons/fa";
 
 import {
   CreateFormSchema,
   createFormSchema,
-} from "@/app/dashboard/subscriptions/create/_schema";
-import { createSubscriptionAction } from "@/app/dashboard/subscriptions/create/_actions";
+} from "@/app/dashboard/subscriptions/[id]/_schemas";
+import { updateSubscription } from "@/app/dashboard/subscriptions/[id]/_actions";
 import {
   Form,
   FormControl,
@@ -31,23 +31,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Subscription } from "@prisma/client";
 
-export default function CreateForm() {
+type SaveFormProps = {
+  subscription: Subscription | null;
+};
+
+export default function SaveForm({ subscription }: SaveFormProps) {
   const router = useRouter();
   const form = useForm<CreateFormSchema>({
     resolver: zodResolver(createFormSchema),
     defaultValues: {
-      name: "",
-      originalPrice: 0,
-      description: "",
-      status: "DRAFT",
+      name: subscription?.name || "",
+      originalPrice: subscription?.originalPrice || 0,
+      description: subscription?.description || "",
+      status: subscription?.status || "DRAFT",
     },
   });
 
   async function onSubmit(values: CreateFormSchema) {
+    const message = subscription
+      ? "Успешно довавяне на нов абонамент."
+      : "Абонаментът беше променен.";
+
     try {
-      await createSubscriptionAction(values);
-      toast.success("Успешно довавяне на нов абонамент.");
+      await updateSubscription(values, subscription?.id || null);
+      toast.success(message);
       router.push("/dashboard/subscriptions");
     } catch (error) {
       if (error instanceof Error) {
@@ -157,13 +166,17 @@ export default function CreateForm() {
           <Button type="submit" disabled={form.formState.isSubmitting}>
             {form.formState.isSubmitting ? (
               <FaSpinner className="animate-spin repeat-infinite w-20 h-20" />
-            ) : (
+            ) : !subscription ? (
               <PlusIcon />
+            ) : (
+              <SaveIcon />
             )}
             <span>
               {form.formState.isSubmitting
                 ? "Зареждане..."
-                : "Добавяне на абонамента"}
+                : !subscription
+                ? "Добавяне на абонамента"
+                : "Промяна на абонамента"}
             </span>
           </Button>
         </div>

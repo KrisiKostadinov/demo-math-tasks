@@ -1,25 +1,10 @@
 "use server";
 
 import { prisma } from "@/db/prisma";
+import { SubscriptionStatus } from "@prisma/client";
 
-export const deleteSubscriptionAction = async (id: string) => {
-  const subscription = await prisma.subscription.findUnique({
-    where: { id },
-  });
-
-  if (!subscription) {
-    throw new Error("Този абонамент не съществува в платформата.");
-  }
-
-  const deletedSubscription = await prisma.subscription.delete({
-    where: { id },
-  });
-
-  return { deletedSubscription };
-};
-
-export const deleteMultipleSubscriptionsAction = async (ids: string[]) => {
-  const deletedSubscriptions = await prisma.subscription.deleteMany({
+export const deleteSubscriptionsAction = async (ids: string[]) => {
+  const deleteSchoolClass = await prisma.schoolClass.deleteMany({
     where: {
       id: {
         in: ids,
@@ -27,5 +12,36 @@ export const deleteMultipleSubscriptionsAction = async (ids: string[]) => {
     },
   });
 
-  return { deletedSubscriptions };
+  return { deleteSchoolClass };
+};
+
+export const getSubscriptions = async () => {
+  const subscriptions = await prisma.subscription.findMany();
+  return subscriptions;
+}
+
+export const getSubscription = async (id: string) => {
+  const subscription = await prisma.subscription.findUnique({
+    where: { id },
+  });
+
+  return subscription;
+}
+
+export const updateSubscriptionStatusAction = async (
+  status: SubscriptionStatus,
+  ids: string[],
+) => {
+  const updatedSubscription = await prisma.subscription.updateMany({
+    where: {
+      id: {
+        in: ids,
+      }
+    },
+    data: {
+      status,
+    },
+  });
+
+  return { updatedSubscription };
 };

@@ -14,11 +14,17 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { getFormattedStatus } from "@/app/dashboard/subscriptions/_utils";
 import { formatDate, formatPrice } from "@/lib/utils";
-import { deleteSubscriptionAction } from "@/app/dashboard/subscriptions/_actions";
+import {
+  deleteSubscriptionsAction,
+  updateSubscriptionStatusAction,
+} from "@/app/dashboard/subscriptions/_actions";
 
 export const columns: ColumnDef<Subscription>[] = [
   {
@@ -144,23 +150,44 @@ export const columns: ColumnDef<Subscription>[] = [
     enableHiding: false,
     header: "Опции",
     cell: ({ row }) => {
-      return <DisplayActions id={row.original.id} />;
+      return (
+        <DisplayActions id={row.original.id} status={row.original.status} />
+      );
     },
   },
 ];
 
-const DisplayActions = ({ id }: { id: string }) => {
+type DisplayActionsProps = {
+  id: string;
+  status: SubscriptionStatus;
+};
+
+const DisplayActions = ({ id, status }: DisplayActionsProps) => {
   const router = useRouter();
 
   const onUpdate = (id: string) => {
-    router.push(`/dashboard/classes/${id}`);
+    router.push(`/dashboard/subscriptions/${id}`);
     return null;
   };
 
   const onDelete = async (id: string) => {
     try {
-      await deleteSubscriptionAction(id);
+      await deleteSubscriptionsAction([id]);
       toast.success("Премахването на класа беше успешно.");
+      router.refresh();
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Нещо се обърка.");
+      }
+    }
+  };
+
+  const onUpdateStatus = async (status: SubscriptionStatus) => {
+    try {
+      await updateSubscriptionStatusAction(status, [id]);
+      toast.success("Статусът беше променен.");
       router.refresh();
     } catch (error) {
       if (error instanceof Error) {
@@ -184,6 +211,23 @@ const DisplayActions = ({ id }: { id: string }) => {
         <DropdownMenuItem onClick={() => onUpdate(id)}>
           Промяна
         </DropdownMenuItem>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>Статус</DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            <DropdownMenuItem
+              onClick={() => onUpdateStatus("ACTIVE")}
+              disabled={status === "ACTIVE"}
+            >
+              Активиране
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => onUpdateStatus("DRAFT")}
+              disabled={status === "DRAFT"}
+            >
+              Деактивиране
+            </DropdownMenuItem>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
         <DropdownMenuItem onClick={() => onDelete(id)}>
           Премахване
         </DropdownMenuItem>

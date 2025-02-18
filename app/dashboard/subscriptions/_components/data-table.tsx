@@ -15,14 +15,19 @@ import {
 } from "@tanstack/react-table";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import { ChevronDown, TrashIcon } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
-import { Subscription } from "@prisma/client";
+import { Subscription, SubscriptionStatus } from "@prisma/client";
 import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
@@ -34,7 +39,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { deleteMultipleSubscriptionsAction } from "@/app/dashboard/subscriptions/_actions";
+import { deleteSubscriptionsAction, updateSubscriptionStatusAction } from "@/app/dashboard/subscriptions/_actions";
 
 type DataTableProps = {
   data: Subscription[];
@@ -68,11 +73,31 @@ export function DataTable({ data, columns }: DataTableProps) {
   });
 
   const onDelete = async () => {
-    const ids = table.getFilteredSelectedRowModel().rows.map((x) => x.original.id);
+    const ids = table
+      .getFilteredSelectedRowModel()
+      .rows.map((x) => x.original.id);
 
     try {
-      await deleteMultipleSubscriptionsAction(ids);
+      await deleteSubscriptionsAction(ids);
       toast.success("Премахването на абонаментите беше успешно.");
+      router.refresh();
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Нещо се обърка.");
+      }
+    }
+  };
+
+  const onUpdateStatus = async (status: SubscriptionStatus) => {
+    const ids = table
+      .getFilteredSelectedRowModel()
+      .rows.map((x) => x.original.id);
+
+    try {
+      await updateSubscriptionStatusAction(status, ids);
+      toast.success("Статусът беше променен.");
       router.refresh();
     } catch (error) {
       if (error instanceof Error) {
@@ -85,22 +110,40 @@ export function DataTable({ data, columns }: DataTableProps) {
 
   return (
     <div className="w-full">
-      <div className="flex items-center py-4">
-        <div className="flex items-center gap-5">
+      <div className="flex items-center gap-5 py-4">
+        <div className="flex items-center gap-5 w-full">
+          {table.getFilteredSelectedRowModel().rows.length > 0 && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild className="w-[200px]">
+                <Button variant="outline">Масови действия</Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="center" className="w-[200px]">
+                <DropdownMenuLabel>Опции</DropdownMenuLabel>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>Статус</DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuItem onClick={() => onUpdateStatus("ACTIVE")}>
+                      Активиране
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onUpdateStatus("DRAFT")}>
+                      Деактивиране
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+                <DropdownMenuItem onClick={onDelete}>
+                  Премахване
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
           <Input
             placeholder="Търсене по име..."
             value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
             onChange={(event) =>
               table.getColumn("name")?.setFilterValue(event.target.value)
             }
-            className="max-w-sm"
+            className="w-full"
           />
-          {table.getFilteredSelectedRowModel().rows.length > 0 && (
-            <Button variant={"destructive"} onClick={onDelete}>
-              <TrashIcon />
-              <span>Премахване на всички</span>
-            </Button>
-          )}
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
