@@ -24,6 +24,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { registerAction } from "@/app/users/sign-up/_actions";
+import { generatePassword } from "@/lib/auth";
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -31,6 +32,7 @@ export default function RegisterForm() {
   const form = useForm<RegisterFormSchema>({
     resolver: zodResolver(registerFormSchema),
     defaultValues: {
+      name: "",
       email: "",
       password: "",
       cpassword: "",
@@ -41,7 +43,7 @@ export default function RegisterForm() {
     try {
       await registerAction(values);
       await signIn("credentials", values);
-      router.push("/");
+      router.push("/subscriptions");
     } catch (error) {
       if (error instanceof Error) {
         toast.error(error.message);
@@ -52,8 +54,20 @@ export default function RegisterForm() {
     }
   };
 
+  const onGeneratePassword = () => {
+    const newPassword = generatePassword(10);
+    form.setValue("password", newPassword);
+    form.setValue("cpassword", newPassword);
+
+    setShowPassword(true);
+
+    setTimeout(() => {
+      setShowPassword(false);
+    }, 3000);
+  };
+
   return (
-    <div>
+    <div className="max-w-xl">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <FormField
@@ -61,7 +75,9 @@ export default function RegisterForm() {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-lg">Имейл адрес</FormLabel>
+                <FormLabel className="text-lg">
+                  Имейл адрес (задължително)
+                </FormLabel>
                 <FormControl>
                   <Input
                     type="email"
@@ -80,7 +96,7 @@ export default function RegisterForm() {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-lg">Парола</FormLabel>
+                <FormLabel className="text-lg">Парола (задължително)</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input
@@ -92,14 +108,21 @@ export default function RegisterForm() {
                     {!showPassword ? (
                       <EyeIcon
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute bottom-3.5 right-4 text-muted-foreground cursor-pointer"
+                        className="absolute top-3.5 right-4 text-muted-foreground cursor-pointer"
                       />
                     ) : (
                       <EyeOffIcon
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute bottom-3.5 right-4 text-muted-foreground cursor-pointer"
+                        className="absolute top-3.5 right-4 text-muted-foreground cursor-pointer"
                       />
                     )}
+                    <Button
+                      onClick={onGeneratePassword}
+                      variant={"link"}
+                      type="button"
+                    >
+                      Генериране на парола
+                    </Button>
                   </div>
                 </FormControl>
                 <FormMessage />
@@ -111,7 +134,9 @@ export default function RegisterForm() {
             name="cpassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-lg">Потвърдете паролата</FormLabel>
+                <FormLabel className="text-lg">
+                  Потвърдете паролата (задължително)
+                </FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input
@@ -137,6 +162,40 @@ export default function RegisterForm() {
               </FormItem>
             )}
           />
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-lg">
+                  Име и фамилия (по избор)
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Можете да въведете малко име и фамилия си."
+                    {...field}
+                    disabled={form.formState.isSubmitting}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <div className="text-lg">
+            При завършено създаване на профил, Вие се съгласявате с нашите{" "}
+            <Button variant={"link"} className="p-0">
+              <Link href={"/terms"} target="_blank">
+                Общи условия
+              </Link>
+            </Button>{" "}
+            и{" "}
+            <Button variant={"link"} className="p-0">
+              <Link href={"/privacy-policy"} target="_blank">
+                Политика на поверителност
+              </Link>
+            </Button>
+            .
+          </div>
           <div className="space-y-5">
             <Button type="submit" disabled={form.formState.isSubmitting}>
               <LogInIcon />

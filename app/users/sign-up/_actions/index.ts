@@ -34,6 +34,7 @@ export const registerAction = async (values: RegisterFormSchema) => {
       email: values.email,
       password: passwordHash,
       role: numberOfUsers === 0 ? "ADMIN" : "USER",
+      name: values.name,
     },
   });
 
