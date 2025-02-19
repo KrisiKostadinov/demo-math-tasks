@@ -1,3 +1,4 @@
+import { Session } from "next-auth";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -6,10 +7,12 @@ import { formatPrice } from "@/lib/utils";
 import { Subscription } from "@prisma/client";
 
 type DisplaySubscriptionProps = {
+  session: Session | null;
   subscription: Subscription;
 } & React.ComponentPropsWithoutRef<"li">;
 
 export default function DisplaySubscription({
+  session,
   subscription,
   ...props
 }: DisplaySubscriptionProps) {
@@ -29,7 +32,13 @@ export default function DisplaySubscription({
         </div>
       )}
       <Button className="w-full hover:bg-green-600" asChild>
-        <Link href={`/payments?subscription=${subscription.id}`}>
+        <Link
+          href={
+            session
+              ? `/payment?subscription=${subscription.id}`
+              : "/users/sign-in"
+          }
+        >
           Активиране на абонамент
         </Link>
       </Button>

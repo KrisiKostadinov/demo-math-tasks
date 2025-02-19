@@ -1,8 +1,10 @@
-import PageWrapper from "@/app/_components/page-wrapper";
+import { auth } from "@/lib/auth";
 import { getSubscriptions } from "@/app/dashboard/subscriptions/_actions";
+import PageWrapper from "@/app/_components/page-wrapper";
 import DisplaySubscriptions from "@/app/subscriptions/_components/display-subscriptions";
 
 export default async function Subscriptions() {
+  const session = await auth();
   const subscriptions = await getSubscriptions("ACTIVE");
 
   return (
@@ -14,7 +16,7 @@ export default async function Subscriptions() {
           бъде активен, за да се възползвате от неограничено решаване на задачи
           по математика.
         </p>
-        <DisplaySubscriptions subscriptions={subscriptions} />
+        <DisplaySubscriptions session={session} subscriptions={subscriptions} />
       </div>
     </PageWrapper>
   );
