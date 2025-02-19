@@ -15,8 +15,11 @@ export const deleteSubscriptionsAction = async (ids: string[]) => {
   return { deleteSchoolClass };
 };
 
-export const getSubscriptions = async () => {
-  const subscriptions = await prisma.subscription.findMany();
+export const getSubscriptions = async (status: SubscriptionStatus | null) => {
+  const subscriptions = await prisma.subscription.findMany({
+    where: { status: status || undefined },
+  });
+  
   return subscriptions;
 }
 

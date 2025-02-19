@@ -7,6 +7,7 @@ import {
   RegisterFormSchema,
 } from "@/app/users/sign-up/_schemas";
 import { prisma } from "@/db/prisma";
+import { stripe } from "@/lib/stripe";
 
 export const registerAction = async (values: RegisterFormSchema) => {
   const validation = registerFormSchema.safeParse(values);
@@ -15,11 +16,11 @@ export const registerAction = async (values: RegisterFormSchema) => {
     throw new Error(validation.error.message);
   }
 
-  const user = await prisma.user.findUnique({
+  const isExistingUser = await prisma.user.findUnique({
     where: { email: values.email },
   });
 
-  if (user) {
+  if (isExistingUser) {
     throw new Error("Този потребител вече съществува.");
   }
 
@@ -28,7 +29,7 @@ export const registerAction = async (values: RegisterFormSchema) => {
 
   const numberOfUsers = await prisma.user.count();
 
-  const createdUser = await prisma.user.create({
+  const user = await prisma.user.create({
     data: {
       email: values.email,
       password: passwordHash,
@@ -36,5 +37,20 @@ export const registerAction = async (values: RegisterFormSchema) => {
     },
   });
 
-  return { createdUser };
+  if (!user.stripeCustomerId) {
+    const data = await stripe.customers.create({
+      email: user.email as string,
+    });
+
+    await prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        stripeCustomerId: data.id,
+      }
+    });
+  }
+
+  return { user };
 };

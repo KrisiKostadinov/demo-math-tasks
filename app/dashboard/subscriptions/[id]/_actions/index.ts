@@ -30,6 +30,7 @@ export const updateSubscription = async (data: CreateFormSchema, id: string | nu
         name: data.name,
         description: data.description,
         originalPrice: data.originalPrice || 0,
+        durationInDays: data.durationInDays,
         status: data.status,
       },
     });
@@ -59,6 +60,7 @@ export const updateSubscription = async (data: CreateFormSchema, id: string | nu
       name: data.name,
       description: data.description,
       originalPrice: data.originalPrice,
+      durationInDays: data.durationInDays,
       status: data.status,
     }
   });

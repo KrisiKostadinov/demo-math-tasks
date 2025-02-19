@@ -103,6 +103,29 @@ export const columns: ColumnDef<Subscription>[] = [
     ),
   },
   {
+    accessorKey: "durationInDays",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Валидност
+          <ArrowUpDown />
+        </Button>
+      );
+    },
+    cell: ({ row }) => (
+      <>
+        {row.getValue("durationInDays") ? (
+          <div>{row.getValue("durationInDays")} дни</div>
+        ) : (
+          <div className="text-muted-foreground">Няма данни</div>
+        )}
+      </>
+    ),
+  },
+  {
     accessorKey: "description",
     header: () => <div>Описание</div>,
     cell: ({ row }) => (

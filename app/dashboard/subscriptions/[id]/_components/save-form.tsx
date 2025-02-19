@@ -45,6 +45,7 @@ export default function SaveForm({ subscription }: SaveFormProps) {
       name: subscription?.name || "",
       originalPrice: subscription?.originalPrice || 0,
       description: subscription?.description || "",
+      durationInDays: subscription?.durationInDays || 1,
       status: subscription?.status || "DRAFT",
     },
   });
@@ -89,6 +90,24 @@ export default function SaveForm({ subscription }: SaveFormProps) {
                 Въведете текстът, който искате да се визуализира на в името на
                 абонамента.
               </FormDescription>
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="durationInDays"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-lg">Валидност на абонамента (в дни)</FormLabel>
+              <Input
+                type="number"
+                {...field}
+                disabled={form.formState.isSubmitting}
+              />
+              <FormDescription className="text-lg">
+                Броят на дните, в които абонаментът е активен.
+              </FormDescription>
+              <FormMessage />
             </FormItem>
           )}
         />

@@ -1,12 +1,12 @@
-// import questions from "@/data/class-1/lession-2/01";
-// import DisplayQuestion, { Question } from "@/components/display-question";
+import questions from "@/data/class-1/lession-2/01";
+import DisplayQuestion, { Question } from "@/components/display-question";
 // import { shuffleArray } from "@/lib/utils";
 
 import PageWrapper from "@/app/_components/page-wrapper";
 
 export default function Home() {
-  // const randomIndex = Math.floor(Math.random() * 4);
-  // const currentQuestion: Question = questions[randomIndex];
+  const randomIndex = Math.floor(Math.random() * 4);
+  const currentQuestion: Question = questions[randomIndex];
 
   // currentQuestion.options = shuffleArray(currentQuestion.options);
 
@@ -17,7 +17,7 @@ export default function Home() {
           {process.env.NEXT_PUBLIC_WEBSITE_TITLE}
         </h1>
       </div>
-      {/* <DisplayQuestion question={currentQuestion} /> */}
+      <DisplayQuestion question={currentQuestion} />
     </PageWrapper>
   );
 }
