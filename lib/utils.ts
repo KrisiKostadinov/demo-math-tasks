@@ -45,3 +45,19 @@ export function formatPrice(amount: number, currency: string = 'BGN', locale: st
       maximumFractionDigits: 2
   }).format(amount);
 }
+
+export const addDays = (date: Date, days: number): Date => {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+};
+
+export const mapStatus = (status: string) => {
+  const statuses: Record<string, string> = {
+    ACTIVE: "Активен",
+    CANCELLED: "Прекъснат",
+    EXPIRED: "Изтекъл"
+  }
+  
+  return statuses[status];
+}

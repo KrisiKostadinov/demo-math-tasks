@@ -19,9 +19,10 @@ export async function POST(request: NextRequest) {
     }
 
     const referer = request.headers.get("referer");
-    const returnUrl = referer
-      ? `${referer}/payment/success?session_id={CHECKOUT_SESSION_ID}`
-      : undefined;
+    const url = new URL(
+      referer || (process.env.NEXT_PUBLIC_WEBSITE_URL as string)
+    );
+    const returnUrl = `${url.origin}/payment/success?session_id={CHECKOUT_SESSION_ID}&subscription_id=${subscriptionId}`;
 
     const session = await stripe.checkout.sessions.create({
       ui_mode: "embedded",

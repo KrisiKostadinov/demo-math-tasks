@@ -3,10 +3,11 @@
 import { ChevronRightIcon } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useMedia } from "react-use";
 import { useEffect, useState } from "react";
 import { Session } from "next-auth";
+import { signOut } from "next-auth/react";
 
 import { ClientIcon } from "@/components/ui/client-icon";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
@@ -24,6 +25,10 @@ export default function DisplaySidebarItems({
   schoolClasses,
   session,
 }: DisplaySidebarItemsProps) {
+  const handleLogout = async () => {
+    await signOut();
+  }
+
   return (
     <ScrollArea className="h-screen">
       <div className="text-2xl font-semibold py-5 text-center border-b-2 border-gray-100">
@@ -61,6 +66,12 @@ export default function DisplaySidebarItems({
               link="/users/account"
               icon="UserCogIcon"
             />
+            <DisplayItem
+              heading="Изход"
+              link="#"
+              icon="LogOutIcon"
+              onClick={() => handleLogout()}
+            />
             {(session?.user.role as UserRole) === "ADMIN" && (
               <DisplayItem
                 heading="Администрация"
@@ -97,13 +108,14 @@ type DisplayItemProps = {
   link: string;
   icon?: keyof typeof LucideIcons;
   isExact?: boolean;
-};
+} & React.ComponentPropsWithoutRef<"li">;
 
 const DisplayItem = ({
   heading,
   link,
   icon,
   isExact = false,
+  ...props
 }: DisplayItemProps) => {
   const [mounded, setMounted] = useState<boolean>(false);
   const { toggleSidebar } = useSidebarStore();
@@ -133,7 +145,7 @@ const DisplayItem = ({
   };
 
   return (
-    <li>
+    <li {...props}>
       <Link
         href={link}
         className={cn(

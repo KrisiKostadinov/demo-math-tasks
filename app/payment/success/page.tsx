@@ -1,15 +1,9 @@
 import { redirect } from "next/navigation";
 
 import { stripe } from "@/lib/stripe";
-
-const getSession = async (id: string) => {
-  try {
-    const session = await stripe.checkout.sessions.retrieve(id);
-    return session;
-  } catch (error) {
-    return null;
-  }
-}
+import { prisma } from "@/db/prisma";
+import { auth } from "@/lib/auth";
+import { addDays } from "@/lib/utils";
 
 type PaymentSuccessProps = {
   searchParams: Promise<{ [key: string]: string }>;
@@ -18,25 +12,62 @@ type PaymentSuccessProps = {
 export default async function PaymentSuccess({
   searchParams,
 }: PaymentSuccessProps) {
-  const { session_id } = await searchParams;
-
-  if (!session_id) {
+  const awaitedParams = await searchParams;
+  const authSession = await auth();
+  
+  if (!awaitedParams.session_id) {
     return redirect("/subscriptions");
   }
-
-  const session = await getSession(session_id);
-
+  
+  const session = await stripe.checkout.sessions.retrieve(
+    awaitedParams.session_id
+  );
+  
   if (!session) {
-    return <div>Невалидна сесия.</div>
+    return redirect("/users/account");
+  }
+  
+  const subscription = await prisma.subscription.findFirst({
+    where: {
+      id: awaitedParams.subscription_id,
+    },
+  });
+
+  const userSubscription = await prisma.userSubscription.findFirst({
+    where: {
+      status: "ACTIVE",
+      currentPeriodStart: { lte: new Date() },
+      currentPeriodEnd: { gte: new Date() },
+      userId: authSession?.user.id,
+    },
+  });
+
+  if (userSubscription) {
+    return redirect("/users/account");
+  }
+  
+  if (!subscription || !subscription.stripePriceId) {
+    return redirect("/users/account");
+  }
+  
+  if (!authSession?.user.id) {
+    return redirect("/users/account");
   }
 
-  if (session.status === "expired") {
-    return <div>Изтекла сесия.</div>
-  }
-
-  if (session.status === "open") {
-    return <div>Вашата сесия е в процес.</div>
-  }
+  await prisma.userSubscription.create({
+    data: {
+      userId: authSession.user.id,
+      subscriptionId: awaitedParams.subscription_id,
+      status: "ACTIVE",
+      priceId: subscription.stripePriceId,
+      price: subscription.originalPrice,
+      currentPeriodStart: new Date(),
+      currentPeriodEnd: addDays(
+        new Date(),
+        subscription.durationInDays as number
+      ),
+    },
+  });
 
   return redirect("/users/account");
 }

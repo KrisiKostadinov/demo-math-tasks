@@ -9,11 +9,13 @@ import { Subscription } from "@prisma/client";
 type DisplaySubscriptionProps = {
   session: Session | null;
   subscription: Subscription;
+  isDisabledButton: boolean;
 } & React.ComponentPropsWithoutRef<"li">;
 
-export default function DisplaySubscription({
+export default async function DisplaySubscription({
   session,
   subscription,
+  isDisabledButton,
   ...props
 }: DisplaySubscriptionProps) {
   return (
@@ -31,7 +33,10 @@ export default function DisplaySubscription({
           Валидност {subscription.durationInDays} дни
         </div>
       )}
-      <Button className="w-full hover:bg-green-600" asChild>
+      <Button
+        className="w-full hover:bg-green-600"
+        disabled={isDisabledButton}
+      >
         <Link
           href={
             session
