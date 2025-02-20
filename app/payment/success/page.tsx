@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
 
 import { stripe } from "@/lib/stripe";
 import { prisma } from "@/db/prisma";

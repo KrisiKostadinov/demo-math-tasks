@@ -1,7 +1,7 @@
+import { redirect } from "next/navigation";
+
 import PageWrapper from "@/app/_components/page-wrapper";
 import Checkout from "@/app/payment/_components/checkout";
-import { getSubscription } from "../dashboard/subscriptions/_actions";
-import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/db/prisma";
 

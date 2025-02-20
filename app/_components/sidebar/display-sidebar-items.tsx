@@ -3,7 +3,7 @@
 import { ChevronRightIcon } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useMedia } from "react-use";
 import { useEffect, useState } from "react";
 import { Session } from "next-auth";
