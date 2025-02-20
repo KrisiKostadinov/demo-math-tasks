@@ -12,7 +12,6 @@ export default async function Subscriptions() {
 
   const userSubscription = await prisma.userSubscription.findFirst({
     where: {
-      status: "ACTIVE",
       currentPeriodStart: { lte: new Date() },
       currentPeriodEnd: { gte: new Date() },
       userId: session ? session.user.id : "",

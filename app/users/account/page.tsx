@@ -9,7 +9,6 @@ export default async function Account() {
   const [activeSubscription, expiredSubscriptions] = await Promise.all([
     prisma.userSubscription.findFirst({
       where: {
-        status: "ACTIVE",
         currentPeriodStart: { lte: new Date() },
         currentPeriodEnd: { gte: new Date() },
         userId: session?.user.id,
@@ -36,8 +35,16 @@ export default async function Account() {
       <div className="p-10">
         <h1 className="text-3xl font-semibold">Моят профил</h1>
       </div>
+      {activeSubscription && (
+        <div className="mx-10 mb-10 rounded-md text-lg shadow text-white bg-green-600 p-5">
+          Абонаментът ви е активен!
+        </div>
+      )}
       {activeSubscription ? (
-        <DisplaySubscription userSubscription={activeSubscription} />
+        <DisplaySubscription
+          userSubscription={activeSubscription}
+          isActive={true}
+        />
       ) : (
         <div className="mx-10 p-5 text-lg border rounded bg-gray-100">
           Нямате активен абонамент
@@ -51,7 +58,8 @@ export default async function Account() {
           <div className="flex flex-col gap-5">
             {expiredSubscriptions.map((subscription, index) => (
               <DisplaySubscription
-                userSubscription={{ ...subscription, status: "EXPIRED" }}
+                userSubscription={subscription}
+                isActive={false}
                 key={index}
               />
             ))}

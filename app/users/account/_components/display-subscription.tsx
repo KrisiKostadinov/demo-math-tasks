@@ -1,15 +1,17 @@
 import { formatDistanceToNow } from "date-fns";
 import { bg } from "date-fns/locale";
 
-import { formatDate, formatPrice, mapStatus } from "@/lib/utils";
+import { formatDate, formatPrice } from "@/lib/utils";
 import { Subscription, UserSubscription } from "@prisma/client";
 
 type DisplaySubscriptionProps = {
   userSubscription: UserSubscription & { subscription: Subscription };
+  isActive: boolean;
 };
 
 export default function DisplaySubscription({
   userSubscription,
+  isActive,
 }: DisplaySubscriptionProps) {
   return (
     <div className="mx-10 border rounded-md p-5 bg-gray-100 space-y-5">
@@ -17,7 +19,7 @@ export default function DisplaySubscription({
       <ul className="flex flex-col items-center gap-2">
         <li className="bg-white text-lg p-2 px-4 border rounded w-full flex justify-between items-center">
           <span>Статус</span>
-          <span>{mapStatus(userSubscription.status)}</span>
+          <span>{isActive ? "Активен" : "Изтекъл"}</span>
         </li>
         <li className="bg-white text-lg p-2 px-4 border rounded w-full flex justify-between items-center">
           <span>Текущ план</span>
@@ -35,7 +37,7 @@ export default function DisplaySubscription({
           <span>Крайна дата</span>
           <span>{formatDate(userSubscription.currentPeriodEnd)}</span>
         </li>
-        {userSubscription.status === "ACTIVE" && (
+        {isActive && (
           <li className="bg-white text-lg p-2 px-4 border rounded w-full flex justify-between items-center">
             <span>Изтича след</span>
             <span>

@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 
 import { stripe } from "@/lib/stripe";
 import { prisma } from "@/db/prisma";
@@ -14,28 +15,25 @@ export default async function PaymentSuccess({
 }: PaymentSuccessProps) {
   const awaitedParams = await searchParams;
   const authSession = await auth();
-  
+
   if (!awaitedParams.session_id) {
     return redirect("/subscriptions");
   }
-  
+
   const session = await stripe.checkout.sessions.retrieve(
     awaitedParams.session_id
   );
-  
+
   if (!session) {
     return redirect("/users/account");
   }
-  
+
   const subscription = await prisma.subscription.findFirst({
-    where: {
-      id: awaitedParams.subscription_id,
-    },
+    where: { id: awaitedParams.subscription_id },
   });
 
   const userSubscription = await prisma.userSubscription.findFirst({
     where: {
-      status: "ACTIVE",
       currentPeriodStart: { lte: new Date() },
       currentPeriodEnd: { gte: new Date() },
       userId: authSession?.user.id,
@@ -45,12 +43,8 @@ export default async function PaymentSuccess({
   if (userSubscription) {
     return redirect("/users/account");
   }
-  
-  if (!subscription || !subscription.stripePriceId) {
-    return redirect("/users/account");
-  }
-  
-  if (!authSession?.user.id) {
+
+  if (!subscription || !subscription.stripePriceId || !authSession?.user.id) {
     return redirect("/users/account");
   }
 
@@ -58,7 +52,6 @@ export default async function PaymentSuccess({
     data: {
       userId: authSession.user.id,
       subscriptionId: awaitedParams.subscription_id,
-      status: "ACTIVE",
       priceId: subscription.stripePriceId,
       price: subscription.originalPrice,
       currentPeriodStart: new Date(),

@@ -39,19 +39,12 @@ model UserSubscription {
   user               User                   @relation(fields: [userId], references: [id])
   subscriptionId     String
   subscription       Subscription           @relation(fields: [subscriptionId], references: [id])
-  status             UserSubscriptionStatus
   priceId            String
   price              Float
   currentPeriodStart DateTime
   currentPeriodEnd   DateTime
   createdAt          DateTime               @default(now())
   updatedAt          DateTime               @updatedAt
-}
-
-enum UserSubscriptionStatus {
-  ACTIVE
-  CANCELLED
-  EXPIRED
 }
 
 model SchoolClass {
