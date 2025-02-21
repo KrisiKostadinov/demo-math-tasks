@@ -6,64 +6,34 @@ import DisplaySubscription from "@/app/users/account/_components/display-subscri
 export default async function Account() {
   const session = await auth();
 
-  const [activeSubscription, expiredSubscriptions] = await Promise.all([
-    prisma.userSubscription.findFirst({
-      where: {
-        currentPeriodStart: { lte: new Date() },
-        currentPeriodEnd: { gte: new Date() },
-        userId: session?.user.id,
-      },
-      include: {
-        user: true,
-        subscription: true,
-      },
-    }),
-    prisma.userSubscription.findMany({
-      where: {
-        currentPeriodEnd: { lte: new Date() },
-        userId: session?.user.id,
-      },
-      include: {
-        user: true,
-        subscription: true,
-      },
-    }),
-  ]);
+  if (!session) {
+    return { redirect: { destination: "/login", permanent: false } };
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    include: { subscription: true },
+  });
+
+  if (!user) {
+    return { redirect: { destination: "/", permanent: false } };
+  }
 
   return (
     <PageWrapper>
       <div className="p-10">
         <h1 className="text-3xl font-semibold">Моят профил</h1>
       </div>
-      {activeSubscription && (
+      {user.subscription && (
         <div className="mx-10 mb-10 rounded-md text-lg shadow text-white bg-green-600 p-5">
           Абонаментът ви е активен!
         </div>
       )}
-      {activeSubscription ? (
-        <DisplaySubscription
-          userSubscription={activeSubscription}
-          isActive={true}
-        />
+      {user.subscription ? (
+        <DisplaySubscription subscription={user.subscription} user={user} />
       ) : (
         <div className="mx-10 p-5 text-lg border rounded bg-gray-100">
           Нямате активен абонамент
-        </div>
-      )}
-      {expiredSubscriptions.length && (
-        <div className="mb-10">
-          <div className="p-10">
-            <h2 className="text-3xl font-semibold">Изтекли абонаменти</h2>
-          </div>
-          <div className="flex flex-col gap-5">
-            {expiredSubscriptions.map((subscription, index) => (
-              <DisplaySubscription
-                userSubscription={subscription}
-                isActive={false}
-                key={index}
-              />
-            ))}
-          </div>
         </div>
       )}
     </PageWrapper>

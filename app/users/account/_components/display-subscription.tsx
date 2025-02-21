@@ -2,16 +2,16 @@ import { formatDistanceToNow } from "date-fns";
 import { bg } from "date-fns/locale";
 
 import { formatDate, formatPrice } from "@/lib/utils";
-import { Subscription, UserSubscription } from "@prisma/client";
+import { Subscription, User } from "@prisma/client";
 
 type DisplaySubscriptionProps = {
-  userSubscription: UserSubscription & { subscription: Subscription };
-  isActive: boolean;
+  subscription: Subscription;
+  user: User;
 };
 
 export default function DisplaySubscription({
-  userSubscription,
-  isActive,
+  subscription,
+  user,
 }: DisplaySubscriptionProps) {
   return (
     <div className="mx-10 border rounded-md p-5 bg-gray-100 space-y-5">
@@ -19,37 +19,35 @@ export default function DisplaySubscription({
       <ul className="flex flex-col items-center gap-2">
         <li className="bg-white text-lg p-2 px-4 border rounded w-full flex justify-between items-center">
           <span>Статус</span>
-          <span>{isActive ? "Активен" : "Изтекъл"}</span>
+          <span>Активен</span>
         </li>
         <li className="bg-white text-lg p-2 px-4 border rounded w-full flex justify-between items-center">
           <span>Текущ план</span>
-          <span>{userSubscription.subscription.name}</span>
+          <span>{subscription.name}</span>
         </li>
         <li className="bg-white text-lg p-2 px-4 border rounded w-full flex justify-between items-center">
           <span>Заплатена сума</span>
-          <span>{formatPrice(userSubscription.price)}</span>
+          <span>{formatPrice(subscription.originalPrice)}</span>
         </li>
         <li className="bg-white text-lg p-2 px-4 border rounded w-full flex justify-between items-center">
           <span>Стартова дата</span>
-          <span>{formatDate(userSubscription.currentPeriodStart)}</span>
+          <span>{formatDate(user.subscriptionPeriodStart as Date)}</span>
         </li>
         <li className="bg-white text-lg p-2 px-4 border rounded w-full flex justify-between items-center">
           <span>Крайна дата</span>
-          <span>{formatDate(userSubscription.currentPeriodEnd)}</span>
+          <span>{formatDate(user.subscriptionPeriodEnd as Date)}</span>
         </li>
-        {isActive && (
           <li className="bg-white text-lg p-2 px-4 border rounded w-full flex justify-between items-center">
             <span>Изтича след</span>
             <span>
               {formatDistanceToNow(
-                new Date(userSubscription.currentPeriodEnd),
+                new Date(user.subscriptionPeriodEnd as Date),
                 {
                   locale: bg,
                 }
               )}
             </span>
           </li>
-        )}
       </ul>
     </div>
   );

@@ -31,35 +31,18 @@ export default async function PaymentSuccess({
     where: { id: awaitedParams.subscription_id },
   });
 
-  const userSubscription = await prisma.userSubscription.findFirst({
-    where: {
-      currentPeriodStart: { lte: new Date() },
-      currentPeriodEnd: { gte: new Date() },
-      userId: authSession?.user.id,
-    },
-  });
-
-  if (userSubscription) {
-    return redirect("/users/account");
-  }
-
   if (!subscription || !subscription.stripePriceId || !authSession?.user.id) {
     return redirect("/users/account");
   }
 
-  await prisma.userSubscription.create({
+  await prisma.user.update({
+    where: { id: authSession.user.id },
     data: {
-      userId: authSession.user.id,
       subscriptionId: awaitedParams.subscription_id,
-      priceId: subscription.stripePriceId,
-      price: subscription.originalPrice,
-      currentPeriodStart: new Date(),
-      currentPeriodEnd: addDays(
-        new Date(),
-        subscription.durationInDays as number
-      ),
+      subscriptionPeriodStart: new Date(),
+      subscriptionPeriodEnd: addDays(new Date(), 30),
     },
   });
-
+  
   return redirect("/users/account");
 }

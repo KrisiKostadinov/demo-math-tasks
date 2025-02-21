@@ -10,13 +10,18 @@ export default async function Subscriptions() {
   const session = await auth();
   const subscriptions = await getSubscriptions("ACTIVE");
 
-  const userSubscription = await prisma.userSubscription.findFirst({
-    where: {
-      currentPeriodStart: { lte: new Date() },
-      currentPeriodEnd: { gte: new Date() },
-      userId: session ? session.user.id : "",
-    },
+  if (!session) {
+    return { redirect: { destination: "/login", permanent: false } };
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    include: { subscription: true },
   });
+
+  if (!user) {
+    return { redirect: { destination: "/", permanent: false } };
+  }
 
   return (
     <PageWrapper>
@@ -27,16 +32,18 @@ export default async function Subscriptions() {
           бъде активен, за да се възползвате от неограничено решаване на задачи
           по математика.
         </p>
-        {userSubscription && (
+        {user.subscription && (
           <div className="rounded-md text-lg shadow text-white bg-green-600 p-5">
             <div>
               Към настоящи момент, имате активен абонамент до{" "}
-              {new Date(userSubscription.currentPeriodEnd).toLocaleDateString()}
+              {new Date(
+                user.subscriptionPeriodEnd as Date
+              ).toLocaleDateString()}
             </div>
             <div>
               Изтича след:{" "}
               {formatDistanceToNow(
-                new Date(userSubscription.currentPeriodEnd),
+                new Date(user.subscriptionPeriodEnd as Date),
                 {
                   locale: bg,
                 }
@@ -48,7 +55,7 @@ export default async function Subscriptions() {
         <DisplaySubscriptions
           session={session}
           subscriptions={subscriptions}
-          isDisabledButton={!!userSubscription}
+          isDisabledButton={!!user.subscription}
         />
       </div>
     </PageWrapper>

@@ -8,16 +8,21 @@ datasource db {
 }
 
 model User {
-  id                String             @id @default(uuid()) @map("_id")
-  name              String?
-  email             String?            @unique
-  emailVerified     DateTime?
-  password          String?
-  stripeCustomerId  String?            @unique
-  role              UserRole
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  UserSubscriptions UserSubscription[]
+  id                      String    @id @default(uuid()) @map("_id")
+  name                    String?
+  email                   String?   @unique
+  emailVerified           DateTime?
+  password                String?
+  stripeCustomerId        String?   @unique
+  role                    UserRole
+  
+  subscriptionPeriodStart DateTime?
+  subscriptionPeriodEnd   DateTime?
+  subscriptionId String?
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id])
+
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
 }
 
 enum UserRole {
@@ -31,20 +36,6 @@ model EmailTemplate {
   code        String?
   description String?
   key         String?
-}
-
-model UserSubscription {
-  id                 String                 @id @default(uuid()) @map("_id")
-  userId             String
-  user               User                   @relation(fields: [userId], references: [id])
-  subscriptionId     String
-  subscription       Subscription           @relation(fields: [subscriptionId], references: [id])
-  priceId            String
-  price              Float
-  currentPeriodStart DateTime
-  currentPeriodEnd   DateTime
-  createdAt          DateTime               @default(now())
-  updatedAt          DateTime               @updatedAt
 }
 
 model SchoolClass {
@@ -64,16 +55,16 @@ enum SchoolClassStatus {
 }
 
 model Subscription {
-  id               String             @id @default(uuid()) @map("_id")
-  name             String
-  originalPrice    Float              @map("original_price")
-  sellingPrice     Float?             @map("selling_price")
-  description      String?
-  durationInDays   Int?
-  status           SubscriptionStatus
-  stripePriceId    String?
-  createdAt        DateTime           @default(now())
-  UserSubscription UserSubscription[]
+  id             String             @id @default(uuid()) @map("_id")
+  name           String
+  originalPrice  Float              @map("original_price")
+  sellingPrice   Float?             @map("selling_price")
+  description    String?
+  durationInDays Int?
+  status         SubscriptionStatus
+  stripePriceId  String?
+  createdAt      DateTime           @default(now())
+  users          User[]             @relation
 }
 
 enum SubscriptionStatus {
