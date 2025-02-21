@@ -8,21 +8,21 @@ datasource db {
 }
 
 model User {
-  id                      String    @id @default(uuid()) @map("_id")
-  name                    String?
-  email                   String?   @unique
-  emailVerified           DateTime?
-  password                String?
-  stripeCustomerId        String?   @unique
-  role                    UserRole
-  
+  id               String    @id @default(uuid()) @map("_id")
+  name             String?
+  email            String?   @unique
+  emailVerified    DateTime?
+  password         String?
+  stripeCustomerId String?   @unique
+  role             UserRole
+
   subscriptionPeriodStart DateTime?
   subscriptionPeriodEnd   DateTime?
-  subscriptionId String?
-  subscription Subscription? @relation(fields: [subscriptionId], references: [id])
+  subscriptionId          String?
+  subscription            Subscription? @relation(fields: [subscriptionId], references: [id])
 
-  createdAt               DateTime  @default(now())
-  updatedAt               DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum UserRole {
@@ -47,6 +47,7 @@ model SchoolClass {
   status      SchoolClassStatus
 
   tutorials SchoolTutorial[] @relation
+  schoolTasks SchoolTask[] @relation
 }
 
 enum SchoolClassStatus {
@@ -81,9 +82,63 @@ model SchoolTutorial {
 
   schoolClassId String
   schoolClass   SchoolClass @relation(fields: [schoolClassId], references: [id], onDelete: Cascade)
+
+  schoolTasks SchoolTask[] @relation
 }
 
 enum TutorialStatus {
   ACTIVE
   DRAFT
+}
+
+// Tasks model
+
+model SchoolTask {
+  id        String     @id @default(uuid()) @map("_id")
+  name      String
+  slug      String
+  status    TaskStatus
+  createdAt DateTime   @default(now())
+
+  schoolTutorialId String
+  schoolTutorial   SchoolTutorial @relation(fields: [schoolTutorialId], references: [id], onDelete: Cascade)
+
+  schoolClassId String
+  schoolClass   SchoolClass @relation(fields: [schoolClassId], references: [id], onDelete: Cascade)
+
+  variants SchoolTaskVariant[]
+}
+
+enum TaskStatus {
+  ACTIVE
+  DRAFT
+}
+
+model SchoolTaskVariant {
+  id          String            @id @default(uuid()) @map("_id")
+  question    String
+  explanation String?
+  solution    String?
+  status      TaskVariantStatus
+
+  createdAt DateTime @default(now())
+
+  schoolTaskId String
+  schoolTask   SchoolTask @relation(fields: [schoolTaskId], references: [id], onDelete: Cascade)
+
+  options SchoolTaskOption[]
+}
+
+enum TaskVariantStatus {
+  ACTIVE
+  DRAFT
+}
+
+model SchoolTaskOption {
+  id        String  @id @default(uuid()) @map("_id")
+  option    String
+  isCorrect Boolean
+
+  schoolTaskVariantId String
+  schoolTaskVariant   SchoolTaskVariant @relation(fields: [schoolTaskVariantId], references: [id], onDelete: Cascade)
 }
