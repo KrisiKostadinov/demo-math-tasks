@@ -1,6 +1,7 @@
 import { PlusIcon } from "lucide-react";
 import { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 
 import { prisma } from "@/db/prisma";
 import { Button } from "@/components/ui/button";
@@ -28,7 +29,9 @@ export default async function Subscriptions() {
         </Button>
       </section>
       <section className="px-5">
-        <DataTable columns={columns} data={subscriptions} />
+        <Suspense>
+          <DataTable columns={columns} data={subscriptions} />
+        </Suspense>
       </section>
     </>
   );

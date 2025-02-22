@@ -17,7 +17,7 @@ import { toast } from "react-toastify";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 
-import { SchoolTask, SchoolTutorial, TutorialStatus } from "@prisma/client";
+import { SchoolTask, TutorialStatus } from "@prisma/client";
 import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,

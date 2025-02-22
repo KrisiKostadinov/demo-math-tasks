@@ -94,3 +94,8 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+#nprogress {
+  z-index: 9999 !important;
+  position: fixed !important;
+}

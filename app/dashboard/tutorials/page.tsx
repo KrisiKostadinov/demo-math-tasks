@@ -1,6 +1,7 @@
 import { PlusIcon } from "lucide-react";
 import { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 
 import { Button } from "@/components/ui/button";
 import { columns } from "@/app/dashboard/tutorials/_components/columns";
@@ -17,9 +18,9 @@ type TutorialsProps = {
 
 export default async function Tutorials({ searchParams }: TutorialsProps) {
   const params = await searchParams;
-  const schoolClassId = params.class ? params.class as string : null;
+  const schoolClassId = params.class ? (params.class as string) : null;
   const tutorials = await getTutorials(schoolClassId, true);
-  
+
   return (
     <>
       <section className="flex justify-between items-center">
@@ -32,7 +33,9 @@ export default async function Tutorials({ searchParams }: TutorialsProps) {
         </Button>
       </section>
       <section className="px-5">
-        <DataTable columns={columns} data={tutorials} />
+        <Suspense>
+          <DataTable columns={columns} data={tutorials} />
+        </Suspense>
       </section>
     </>
   );

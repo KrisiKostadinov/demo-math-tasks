@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { Suspense } from "react";
 
 import { columns } from "@/app/dashboard/users/_components/columns";
 import { DataTable } from "@/app/dashboard/users/_components/data-table";
@@ -25,7 +26,9 @@ export default async function Users() {
         <h1 className="text-2xl font-semibold p-5">Потребители</h1>
       </section>
       <section className="px-5">
-        <DataTable columns={columns} data={users} />
+        <Suspense>
+          <DataTable columns={columns} data={users} />
+        </Suspense>
       </section>
       <ChooseSubscriptionsDialog subscriptions={subscriptions} />
     </>
