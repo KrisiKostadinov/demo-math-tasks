@@ -1,9 +1,10 @@
 "use server";
 
 import { prisma } from "@/db/prisma";
-import { FormSchema } from "@/app/dashboard/tasks/[id]/_schemas/update-task-name";
+import { FormSchema } from "@/app/dashboard/tasks/[id]/_schemas/save-task-info";
 import { createSlug } from "@/lib/utils";
 import { TaskStatus } from "@prisma/client";
+import { SaveTaskVariantSchema } from "../[id]/_schemas/save-task-variant";
 
 export async function createOrUpdateTask(
   id: string | undefined,
@@ -71,4 +72,35 @@ export async function updateTaskStatus(ids: string[], status: TaskStatus) {
       ids.length === 1 ? "задачата" : "задачите"
     } е обновен успешно.`,
   };
+}
+
+export async function createOrUpdateTaskVariant(taskId: string, values: SaveTaskVariantSchema) {
+  const task = await prisma.schoolTask.findUnique({
+    where: { id: taskId },
+  });
+
+  if (!task) {
+    return { error: "Задачата не е намерена." };
+  }
+
+  const options = values.options.map(option => ({
+    option: option.text,
+    isCorrect: option.isCorrect,
+  }));
+
+  const schoolTaskVariant = await prisma.schoolTaskVariant.create({
+    data: {
+      question: values.question,
+      status: values.status,
+      explanation: values.explanation,
+      solution: values.solution,
+      schoolTaskId: taskId,
+
+      options: {
+        createMany: { data: options },
+      }
+    },
+  });
+
+  return { schoolTaskVariant, message: "Задачата е добавена." }
 }

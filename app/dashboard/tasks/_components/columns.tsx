@@ -4,8 +4,16 @@ import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import Link from "next/link";
+import { format, formatDistanceToNow } from "date-fns";
 
-import { SchoolTask, TaskVariantStatus, TutorialStatus } from "@prisma/client";
+import {
+  SchoolClass,
+  SchoolTask,
+  SchoolTutorial,
+  TaskVariantStatus,
+  TutorialStatus,
+} from "@prisma/client";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,11 +28,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { getFormattedStatus } from "@/app/dashboard/tutorials/_utils";
-import { formatDate } from "@/lib/utils";
-import {
-  deleteTask,
-  updateTaskStatus,
-} from "@/app/dashboard/tasks/_actions";
+import { deleteTask, updateTaskStatus } from "@/app/dashboard/tasks/_actions";
+import { bg } from "date-fns/locale";
 
 export const columns: ColumnDef<SchoolTask>[] = [
   {
@@ -65,6 +70,58 @@ export const columns: ColumnDef<SchoolTask>[] = [
     cell: ({ row }) => <div>{row.getValue("name")}</div>,
   },
   {
+    accessorKey: "schoolClass.name",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Клас
+          <ArrowUpDown />
+        </Button>
+      );
+    },
+    cell: ({ row }) => {
+      const task = row.original as SchoolTask & {
+        schoolClass?: SchoolClass;
+      };
+      return (
+        <Button variant={"link"} asChild className="p-0">
+          <Link href={`/dashboard/tasks?class=${task.schoolClassId}`}>
+            {task.schoolClass?.name ?? "Няма клас"}
+          </Link>
+        </Button>
+      );
+    },
+  },
+  {
+    accessorKey: "schoolTutorial.name",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Урок
+          <ArrowUpDown />
+        </Button>
+      );
+    },
+    cell: ({ row }) => {
+      const task = row.original as SchoolTask & {
+        schoolTutorial?: SchoolTutorial;
+      };
+      return (
+        <Button variant={"link"} asChild className="p-0">
+          <Link href={`/dashboard/tasks?tutorial=${task.schoolTutorialId}`}>
+            {task.schoolTutorial?.name ?? "Няма урок"}
+          </Link>
+        </Button>
+      );
+    },
+  },
+  {
     accessorKey: "createdAt",
     header: ({ column }) => (
       <Button
@@ -75,7 +132,13 @@ export const columns: ColumnDef<SchoolTask>[] = [
         <ArrowUpDown />
       </Button>
     ),
-    cell: ({ row }) => <div>{formatDate(row.getValue("createdAt"))}</div>,
+    cell: ({ row }) => (
+      <div>
+        {formatDistanceToNow(new Date(row.getValue("createdAt")), {
+          locale: bg,
+        })}
+      </div>
+    ),
   },
   {
     accessorKey: "status",

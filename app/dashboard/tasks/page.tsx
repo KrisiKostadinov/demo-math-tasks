@@ -12,15 +12,24 @@ export const metadata: Metadata = {
   title: "Задачи",
 };
 
-export default async function Subscriptions() {
+type SubscriptionsProps = {
+  searchParams: Promise<{ [key: string]: string }>;
+};
+
+export default async function Subscriptions({ searchParams }: SubscriptionsProps) {
+  const awaitedParams = await searchParams;
+  const classId = awaitedParams.class;
+  const tutorialId = awaitedParams.tutorial;
+
   const tasks = await prisma.schoolTask.findMany({
+    where: {
+      schoolClassId: classId,
+      schoolTutorialId: tutorialId,
+    },
     orderBy: { createdAt: "desc" },
     include: {
-      variants: {
-        include: {
-          options: true,
-        },
-      },
+      schoolClass: true,
+      schoolTutorial: true,
     },
   });  
 

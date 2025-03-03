@@ -2,8 +2,8 @@ import { Metadata } from "next";
 
 import { prisma } from "@/db/prisma";
 import PageHeader from "@/app/dashboard/tasks/[id]/_components/page-header";
-import UpdatedTaskName from "@/app/dashboard/tasks/[id]/_components/update-task-name";
-import { Separator } from "@/components/ui/separator";
+import SaveTaskInfo from "@/app/dashboard/tasks/[id]/_components/save-task-info";
+import VariantsWrapper from "@/app/dashboard/tasks/[id]/_components/task-variants/variants-wrapper";
 
 export const metadata: Metadata = {
   title: "Управление на задачи",
@@ -20,7 +20,11 @@ export default async function CreateOrUpdateTask({ params }: CreateTaskProps) {
   const task = !isCreate
     ? await prisma.schoolTask.findUnique({
         where: { id: awaitedParams.id },
-        include: { schoolClass: true, schoolTutorial: true, variants: true },
+        include: {
+          schoolClass: true,
+          schoolTutorial: true,
+          variants: { include: { options: true } },
+        },
       })
     : null;
 
@@ -32,12 +36,12 @@ export default async function CreateOrUpdateTask({ params }: CreateTaskProps) {
   return (
     <div className="p-5 space-y-5">
       <PageHeader isCreate={isCreate} />
-      <Separator />
-      <UpdatedTaskName
+      <SaveTaskInfo
         task={task}
         schoolClasses={schoolClasses}
         schoolTutorials={schoolTutorials}
       />
+      {task && <VariantsWrapper task={task} />}
     </div>
   );
 }

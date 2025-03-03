@@ -29,12 +29,19 @@ export function createSlug(text: string): string {
     .substr(0, 100);
 }
 
-export function formatDate(date: Date, format: string = "DD.MM.YYYY"): string {
+export function formatDate(date: Date, format: string = "DD.MM.yyyy HH:mm"): string {
   const day = date.getDate().toString().padStart(2, "0");
   const month = (date.getMonth() + 1).toString().padStart(2, "0");
   const year = date.getFullYear().toString();
+  const hours = date.getHours().toString().padStart(2, "0");
+  const minutes = date.getMinutes().toString().padStart(2, "0");
 
-  return format.replace("DD", day).replace("MM", month).replace("YYYY", year);
+  return format
+    .replace("DD", day)
+    .replace("MM", month)
+    .replace("yyyy", year)
+    .replace("HH", hours)
+    .replace("mm", minutes);
 }
 
 export function formatPrice(amount: number, currency: string = 'BGN', locale: string = 'bg-BG'): string {
